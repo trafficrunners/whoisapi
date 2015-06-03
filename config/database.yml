@@ -8,10 +8,16 @@ default: &default
   adapter: postgresql
   pool: 5
   encoding: unicode
-  username: j
+  username: n
   password:
   timeout: 5000
 
 development:
   <<: *default
   database: whoisapi_development
+
+production:
+  <<: *default
+  database: bulkwhois
+  username: bulk
+  password: bulk_whois_123
