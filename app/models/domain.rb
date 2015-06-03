@@ -41,13 +41,21 @@ class Domain < ActiveRecord::Base
       if url.end_with?(".nl") && w.content.include?("maximum number of requests per second")
         raise NlWhoisThrottled
       end
-    rescue Whois::ConnectionError, Timeout::Error => e
-      puts e.message
 
-      Airbrake.notify_or_ignore(e, parameters: {url: url})
-      sleep 1
-      retry
+      raise ::Whois::ResponseError if w.response_incomplete?
+
+      raise ::Whois::ResponseIsThrottled if w.response_throttled?
+
+      raise ::Whois::ResponseIsUnavailable if w.response_unavailable?
+
+    #rescue Whois::ConnectionError, Timeout::Error => e
+    #  puts e.message
+#
+#      Airbrake.notify_or_ignore(e, parameters: {url: url})
+#      sleep 1
+      #retry
     rescue => e
+      puts "*" * 100
       puts e.message
 
       Airbrake.notify_or_ignore(e, parameters: {url: url})

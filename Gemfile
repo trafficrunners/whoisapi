@@ -49,3 +49,6 @@ gem 'public_suffix'
 gem 'annotate'
 gem 'proxifier'
 gem "airbrake"
+
+
+gem 'puma'
