@@ -15,6 +15,8 @@
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
+  TLDS_WITHOUT_WHOIS = %{.bh .com.ar}
+
   def self.parse_url(d)
     if !d.starts_with? "http"
       d = "http://#{d}"
@@ -34,6 +36,10 @@ class Domain < ActiveRecord::Base
   def self.query(url)
     url = Domain.parse_url(url)
     tld = PublicSuffix.parse(url).tld
+
+    if TLDS_WITHOUT_WHOIS.include?(tld)
+      return nil
+    end
 
     begin
       w = Whois.lookup(url)
@@ -59,7 +65,7 @@ class Domain < ActiveRecord::Base
       puts e.message
 
       Airbrake.notify_or_ignore(e, parameters: {url: url})
-      sleep 1
+      #sleep 1
       retry
     end
 
@@ -83,7 +89,10 @@ class Domain < ActiveRecord::Base
 
   def self.available?(url)
     d = Domain.lookup(url)
-    d.available?
+    if d.nil?
+      return nil
+    end
+    return d.available?
   end
 
 end
