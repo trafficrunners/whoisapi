@@ -52,7 +52,7 @@ class Domain < ActiveRecord::Base
       return nil
     end
 
-    max_attempts = 10
+    max_attempts = 8
     retry_attempts = 0
 
     begin
@@ -72,19 +72,23 @@ class Domain < ActiveRecord::Base
 
       raise ::Whois::ResponseIsUnavailable if w.response_unavailable?
 
-    rescue Timeout::Error => e
-      proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
-      puts "-" * 100
-      puts e.message
-
-      Airbrake.notify_or_ignore(e, parameters: {url: url})
-      retry if (retry_attempts += 1) < max_attempts
     rescue => e
+
+      if e.class == Timeout::Error
+        proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
+      end
+
       puts "*" * 100
       puts e.message
 
-      Airbrake.notify_or_ignore(e, parameters: {url: url})
-      retry if (retry_attempts += 1) < max_attempts
+      Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{$proxy}: #{e.message}")
+
+      if (retry_attempts += 1) < max_attempts
+        retry
+      else
+        Airbrake.notify_or_ignore(error_class: "Whois Failed after max attempts", error_message: "#{url} - #{e.message}")
+        return nil
+      end
     end
 
     parts = w.parts.as_json
