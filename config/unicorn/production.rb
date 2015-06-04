@@ -6,7 +6,7 @@ pid "#{root}/tmp/pids/unicorn.pid"
 stderr_path "#{root}/log/unicorn.log"
 stdout_path "#{root}/log/unicorn.log"
 
-worker_processes 30
+worker_processes 15
 timeout 30
 preload_app true
 
