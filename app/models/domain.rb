@@ -91,12 +91,16 @@ class Domain < ActiveRecord::Base
       end
     end
 
-    parts = w.parts.as_json
-    parts.each do |part|
-      part["body"] = part["body"].encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
+    if tld.end_with?("cn") && w.content.include?("No matching record")
+      Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
+    else
+      parts = w.parts.as_json
+      parts.each do |part|
+        part["body"] = part["body"].encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
+      end
+      
+      Domain.create(url: url, tld: tld, parts: parts, server: w.server.as_json, properties: w.properties.as_json)
     end
-
-    Domain.create(url: url, tld: tld, parts: parts, server: w.server.as_json, properties: w.properties.as_json)
   end
 
   # look for it first, then query
