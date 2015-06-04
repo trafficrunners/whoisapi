@@ -12,6 +12,16 @@
 #  updated_at :datetime         not null
 #
 
+require "proxifier/env"
+
+$proxy = nil
+
+class TCPSocket
+  def self.environment_proxy
+    $proxy
+  end
+end
+
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
@@ -34,6 +44,7 @@ class Domain < ActiveRecord::Base
   end
 
   def self.query(url)
+
     url = Domain.parse_url(url)
     tld = PublicSuffix.parse(url).tld
 
@@ -42,6 +53,10 @@ class Domain < ActiveRecord::Base
     end
 
     begin
+      proxy = MyProxy.rand
+      proxy.update_column(:used, proxy.used + 1)
+
+      $proxy = proxy.format
       w = Whois.lookup(url)
 
       if url.end_with?(".nl") && w.content.include?("maximum number of requests per second")
@@ -54,18 +69,19 @@ class Domain < ActiveRecord::Base
 
       raise ::Whois::ResponseIsUnavailable if w.response_unavailable?
 
-    #rescue Whois::ConnectionError, Timeout::Error => e
-    #  puts e.message
-#
-#      Airbrake.notify_or_ignore(e, parameters: {url: url})
-#      sleep 1
-      #retry
+
+    rescue Timeout::Error => e
+      proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
+      puts "-" * 100
+      puts e.message
+
+      Airbrake.notify_or_ignore(e, parameters: {url: url})
+      retry
     rescue => e
       puts "*" * 100
       puts e.message
 
       Airbrake.notify_or_ignore(e, parameters: {url: url})
-      #sleep 1
       retry
     end
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150603053506) do
+ActiveRecord::Schema.define(version: 20150604005401) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,6 +24,15 @@ ActiveRecord::Schema.define(version: 20150603053506) do
     t.jsonb    "properties"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "my_proxies", force: :cascade do |t|
+    t.string  "ip"
+    t.string  "port"
+    t.string  "user"
+    t.string  "pass"
+    t.integer "timeout_errors", default: 0
+    t.integer "used",           default: 0
   end
 
 end

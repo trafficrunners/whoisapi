@@ -50,6 +50,8 @@ gem 'annotate'
 gem 'proxifier'
 gem "airbrake"
 
+gem 'puma'
+
 gem 'unicorn'
 
 gem 'capistrano', '~> 3.1.0'
