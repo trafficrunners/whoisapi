@@ -25,7 +25,7 @@ end
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
-  TLDS_WITHOUT_WHOIS = %w{bh com.ar com.ph gr}
+  TLDS_WITHOUT_WHOIS = %w{bh com.ar com.ph gr cr ad mc pk}
 
   def self.parse_url(d)
     if !d.starts_with? "http"
@@ -60,6 +60,7 @@ class Domain < ActiveRecord::Base
 
       $proxy = proxy.format
       w = Whois.lookup(url)
+      $proxy = nil
 
       if url.end_with?(".nl") && w.content.include?("maximum number of requests per second")
         raise NlWhoisThrottled
@@ -75,7 +76,7 @@ class Domain < ActiveRecord::Base
       puts "*" * 100
       puts e.message
 
-      if e.class == Timeout::Error
+      if e.class == Timeout::Error || e.class == Whois::ConnectionError
         proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
       else
         Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{$proxy}: #{e.message}")
