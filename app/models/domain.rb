@@ -25,7 +25,7 @@ end
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
-  TLDS_WITHOUT_WHOIS = %w{bh com.ar com.ph gr cr ad mc pk}
+  TLDS_WITH_WHOIS = Whois::Server.definitions[:tld].map { |a| a[0][1..-1] if a[1] }.compact
 
   def self.parse_url(d)
     if !d.starts_with? "http"
@@ -47,7 +47,7 @@ class Domain < ActiveRecord::Base
     url = Domain.parse_url(url)
     tld = PublicSuffix.parse(url).tld
 
-    if TLDS_WITHOUT_WHOIS.include?(tld)
+    if !TLDS_WITH_WHOIS.include?(tld)
       return nil
     end
 
@@ -93,21 +93,30 @@ class Domain < ActiveRecord::Base
     if tld.end_with?("cn") && w.content.include?("No matching record")
       Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
     else
-      parts = w.parts.as_json
-      parts.each do |part|
-        part["body"] = part["body"].encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
-      end
-      
-      Domain.create(url: url, tld: tld, parts: parts, server: w.server.as_json, properties: w.properties.as_json)
+      Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
     end
   end
+
+  def self.fix_encoding(obj)
+    if obj.is_a? String
+      #obj.encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
+      obj.force_encoding("ASCII-8BIT").force_encoding('UTF-8').gsub("\u0000", "")
+    elsif obj.is_a? Array
+      obj.map {|item| fix_encoding item }
+    elsif obj.is_a? Hash
+      obj.merge(obj) {|k, val| fix_encoding val }
+    else
+      obj
+    end
+  end
+
 
   # look for it first, then query
   def self.lookup(url)
     url = Domain.parse_url(url)
     tld = PublicSuffix.parse(url).tld
 
-    if TLDS_WITHOUT_WHOIS.include?(tld)
+    if !TLDS_WITH_WHOIS.include?(tld)
       return nil
     end
 
