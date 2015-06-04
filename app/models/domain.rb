@@ -25,7 +25,7 @@ end
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
-  TLDS_WITHOUT_WHOIS = %w{.bh .com.ar .com.ph .gr}
+  TLDS_WITHOUT_WHOIS = %w{bh com.ar com.ph gr}
 
   def self.parse_url(d)
     if !d.starts_with? "http"
@@ -44,7 +44,6 @@ class Domain < ActiveRecord::Base
   end
 
   def self.query(url)
-
     url = Domain.parse_url(url)
     tld = PublicSuffix.parse(url).tld
 
@@ -105,7 +104,12 @@ class Domain < ActiveRecord::Base
   # look for it first, then query
   def self.lookup(url)
     url = Domain.parse_url(url)
-    
+    tld = PublicSuffix.parse(url).tld
+
+    if TLDS_WITHOUT_WHOIS.include?(tld)
+      return nil
+    end
+
     d = Domain.where(url: url).where("created_at > ?", 1.day.ago).order("created_at desc").first
     if d.nil?
       d = Domain.query(url)
