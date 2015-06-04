@@ -52,6 +52,9 @@ class Domain < ActiveRecord::Base
       return nil
     end
 
+    max_attempts = 10
+    retry_attempts = 0
+
     begin
       proxy = MyProxy.rand
       proxy.update_column(:used, proxy.used + 1)
@@ -69,23 +72,27 @@ class Domain < ActiveRecord::Base
 
       raise ::Whois::ResponseIsUnavailable if w.response_unavailable?
 
-
     rescue Timeout::Error => e
       proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
       puts "-" * 100
       puts e.message
 
       Airbrake.notify_or_ignore(e, parameters: {url: url})
-      retry
+      retry if (retry_attempts += 1) < max_attempts
     rescue => e
       puts "*" * 100
       puts e.message
 
       Airbrake.notify_or_ignore(e, parameters: {url: url})
-      retry
+      retry if (retry_attempts += 1) < max_attempts
     end
 
-    Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: w.properties.as_json)
+    parts = w.parts.as_json
+    parts.each do |part|
+      part["body"] = part["body"].encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
+    end
+
+    Domain.create(url: url, tld: tld, parts: parts, server: w.server.as_json, properties: w.properties.as_json)
   end
 
   # look for it first, then query
