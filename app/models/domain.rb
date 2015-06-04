@@ -15,7 +15,7 @@
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
-  TLDS_WITHOUT_WHOIS = %{.bh .com.ar}
+  TLDS_WITHOUT_WHOIS = %w{.bh .com.ar}
 
   def self.parse_url(d)
     if !d.starts_with? "http"
