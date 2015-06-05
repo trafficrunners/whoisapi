@@ -47,26 +47,22 @@ class Domain < ActiveRecord::Base
   end
 
   def self.parse_url(d)
-    if !d.starts_with? "http"
+    if !d.starts_with?("http:") && !d.starts_with?("https:")
       d = "http://#{d}"
     end
 
     begin
       parsed_whole_domain = URI.parse(d).host
-      PublicSuffix.parse(parsed_whole_domain).domain
+      ps = PublicSuffix.parse(parsed_whole_domain)
+      return [ps.domain, ps.tld]
     rescue => e
-      #debugger
-      puts "could not parse #{d}"
-      puts e.message
-      return nil
+      return [nil, e.message]
     end
   end
 
   def self.query(url)
-    url = Domain.parse_url(url)
-    tld = PublicSuffix.parse(url).tld
-
-    if !TLDS_WITH_WHOIS.include?(tld)
+    url, tld = Domain.parse_url(url)
+    if url.nil? || !TLDS_WITH_WHOIS.include?(tld)
       return nil
     end
 
@@ -99,7 +95,7 @@ class Domain < ActiveRecord::Base
       if e.class == Timeout::Error || e.class == Whois::ConnectionError
         proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
       else
-        Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{proxy}: #{e.message}")
+        Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{proxy.ip}: #{e.message}")
       end
 
       if (retry_attempts += 1) < max_attempts
@@ -119,7 +115,7 @@ class Domain < ActiveRecord::Base
       end
     rescue => e
       BrokenDomain.create!(url: url, error: "#{e.class}: #{e.message}")
-      Airbrake.notify_or_ignore(error_class: "Domain Creation Failed: #{e.class}", error_message: "#{e.message}")
+      Airbrake.notify_or_ignore(error_class: "Domain Creation Failed: #{e.class}", error_message: "#{url} - #{e.message}")
       return nil
     end
   end
@@ -140,10 +136,8 @@ class Domain < ActiveRecord::Base
 
   # look for it first, then query
   def self.lookup(url)
-    url = Domain.parse_url(url)
-    tld = PublicSuffix.parse(url).tld
-
-    if !TLDS_WITH_WHOIS.include?(tld)
+    url, tld = Domain.parse_url(url)
+    if url.nil? || !TLDS_WITH_WHOIS.include?(tld)
       return nil
     end
 
