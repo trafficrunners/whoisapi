@@ -14,6 +14,7 @@
 
 require "proxifier/env"
 
+
 $proxy = nil
 
 class TCPSocket
@@ -22,10 +23,28 @@ class TCPSocket
   end
 end
 
+
+
 class Domain < ActiveRecord::Base
   class NlWhoisThrottled < StandardError; end
 
   TLDS_WITH_WHOIS = Whois::Server.definitions[:tld].map { |a| a[0][1..-1] if a[1] }.compact
+
+  def self.test_proxies
+    require 'open-uri'
+    MyProxy.all.each do |proxy|
+      $proxy = proxy.format
+      puts proxy.format
+
+      begin
+        puts open("https://trafficrunners.net")
+      rescue => e
+        puts e.message
+      end
+
+      $proxy = nil
+    end
+  end
 
   def self.parse_url(d)
     if !d.starts_with? "http"
@@ -85,22 +104,29 @@ class Domain < ActiveRecord::Base
       if (retry_attempts += 1) < max_attempts
         retry
       else
+        BrokenDomain.create!(url: url, error: e.message)
         Airbrake.notify_or_ignore(error_class: "Whois Failed after max attempts", error_message: "#{url} - #{e.message}")
         return nil
       end
     end
 
-    if tld.end_with?("cn") && w.content.include?("No matching record")
-      Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
-    else
-      Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
+    begin
+      if tld.end_with?("cn") && w.content.include?("No matching record")
+        Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
+      else
+        Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
+      end
+    rescue => e
+      BrokenDomain.create!(url: url, error: "#{e.class}: #{e.message}")
+      Airbrake.notify_or_ignore(error_class: "Domain Creation Failed: #{e.class}", error_message: "#{e.message}")
+      return nil
     end
   end
 
   def self.fix_encoding(obj)
     if obj.is_a? String
       #obj.encode('UTF-8', {:invalid => :replace, :undef => :replace, :replace => ''}).gsub("\u0000", "")
-      obj.force_encoding("ASCII-8BIT").force_encoding('UTF-8').gsub("\u0000", "")
+      obj.force_encoding("ASCII-8BIT").force_encoding('UTF-8').gsub("\u0000", "").scrub
     elsif obj.is_a? Array
       obj.map {|item| fix_encoding item }
     elsif obj.is_a? Hash

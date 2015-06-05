@@ -44,7 +44,7 @@ group :development, :test do
 end
 
 
-gem 'whois'
+gem 'whois', git: "https://github.com/trafficrunners/whois.git"
 gem 'public_suffix'
 gem 'annotate'
 gem 'proxifier'
