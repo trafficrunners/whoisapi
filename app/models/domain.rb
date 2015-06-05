@@ -73,6 +73,7 @@ class Domain < ActiveRecord::Base
     max_attempts = 8
     retry_attempts = 0
 
+    proxy = nil
     begin
       proxy = MyProxy.rand
       proxy.update_column(:used, proxy.used + 1)
@@ -98,7 +99,7 @@ class Domain < ActiveRecord::Base
       if e.class == Timeout::Error || e.class == Whois::ConnectionError
         proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
       else
-        Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{$proxy}: #{e.message}")
+        Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{proxy}: #{e.message}")
       end
 
       if (retry_attempts += 1) < max_attempts
