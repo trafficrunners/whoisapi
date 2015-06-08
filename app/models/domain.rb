@@ -76,7 +76,7 @@ class Domain < ActiveRecord::Base
     proxy = nil
     begin
       proxy = MyProxy.rand
-      proxy.update_column(:used, proxy.used + 1)
+      MyProxy.update_counters proxy.id, used: 1
 
       $proxy = proxy.format
       w = Whois.lookup(url)
@@ -97,7 +97,8 @@ class Domain < ActiveRecord::Base
       puts e.message
 
       if e.class == Timeout::Error || e.class == Whois::ConnectionError
-        proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
+        MyProxy.update_counters proxy.id, timeout_errors: 1
+        #proxy.update_column(:timeout_errors, proxy.timeout_errors + 1)
       else
         Airbrake.notify_or_ignore(error_class: "#{e.class}", error_message: "#{url} using #{proxy.ip}: #{e.message}")
       end
@@ -113,9 +114,11 @@ class Domain < ActiveRecord::Base
 
     begin
       if tld.end_with?("cn") && w.content.include?("No matching record")
+        MyProxy.update_counters proxy.id, successful_whois: 1
         #Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
         Domain.new(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
       else
+        MyProxy.update_counters proxy.id, successful_whois: 1
         #Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
         Domain.new(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
       end

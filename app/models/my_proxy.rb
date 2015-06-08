@@ -2,13 +2,14 @@
 #
 # Table name: my_proxies
 #
-#  id             :integer          not null, primary key
-#  ip             :string
-#  port           :string
-#  user           :string
-#  pass           :string
-#  timeout_errors :integer          default(0)
-#  used           :integer          default(0)
+#  id               :integer          not null, primary key
+#  ip               :string
+#  port             :string
+#  user             :string
+#  pass             :string
+#  timeout_errors   :integer          default(0)
+#  used             :integer          default(0)
+#  successful_whois :integer
 #
 
 require 'csv'

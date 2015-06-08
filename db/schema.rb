@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150608025737) do
+ActiveRecord::Schema.define(version: 20150608064627) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,8 +40,9 @@ ActiveRecord::Schema.define(version: 20150608025737) do
     t.string  "port"
     t.string  "user"
     t.string  "pass"
-    t.integer "timeout_errors", default: 0
-    t.integer "used",           default: 0
+    t.integer "timeout_errors",   default: 0
+    t.integer "used",             default: 0
+    t.integer "successful_whois"
   end
 
 end
