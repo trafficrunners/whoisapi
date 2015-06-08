@@ -113,9 +113,11 @@ class Domain < ActiveRecord::Base
 
     begin
       if tld.end_with?("cn") && w.content.include?("No matching record")
-        Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
+        #Domain.create(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
+        Domain.new(url: url, tld: tld, parts: w.parts.as_json, server: w.server.as_json, properties: {"available?" => true})
       else
-        Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
+        #Domain.create(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
+        Domain.new(url: url, tld: tld, parts: Domain.fix_encoding(w.parts.as_json), server: w.server.as_json, properties: Domain.fix_encoding(w.properties.as_json))
       end
     rescue => e
       BrokenDomain.create!(url: url, error: "#{e.class}: #{e.message}")
@@ -145,10 +147,10 @@ class Domain < ActiveRecord::Base
       return nil
     end
 
-    d = Domain.where(url: url).where("created_at > ?", 1.day.ago).order("created_at desc").first
-    if d.nil?
+    #d = Domain.where(url: url).where("created_at > ?", 1.day.ago).order("created_at desc").first
+    #if d.nil?
       d = Domain.query(url)
-    end
+    #end
     d
   end
 
