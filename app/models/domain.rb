@@ -11,6 +11,10 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
+# Indexes
+#
+#  index_domains_on_url  (url)
+#
 
 require "proxifier/env"
 
