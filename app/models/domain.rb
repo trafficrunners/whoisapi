@@ -66,7 +66,7 @@ class Domain < ActiveRecord::Base
 
   def self.query(url)
     url, tld = Domain.parse_url(url)
-    if url.nil? || !TLDS_WITH_WHOIS.include?(tld)
+    if url.nil? || TLDS_WITH_WHOIS.none? { |allowed_tld| tld.end_with?(allowed_tld)  }
       return nil
     end
 
@@ -146,7 +146,7 @@ class Domain < ActiveRecord::Base
   # look for it first, then query
   def self.lookup(url)
     url, tld = Domain.parse_url(url)
-    if url.nil? || !TLDS_WITH_WHOIS.include?(tld)
+    if url.nil? || TLDS_WITH_WHOIS.none? { |allowed_tld| tld.end_with?(allowed_tld)  }
       return nil
     end
 
