@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/trafficrunners/whois.git
-  revision: bf21f35a8257892499adde4f7154e00ee768b785
+  revision: 6de77b1571a13b212d876600cab7926070bbb36a
   specs:
     whois (3.5.9)
       activesupport (>= 3)
