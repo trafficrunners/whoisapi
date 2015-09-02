@@ -25,7 +25,7 @@ class MyProxy < ActiveRecord::Base
   end
 
   def self.rand
-    self.order("RANDOM()").first
+    new(Buyproxies.from_config.proxies.sample)
   end
 
   def format
