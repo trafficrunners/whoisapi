@@ -20,6 +20,7 @@ class Buyproxies
   URL_WILD = "http://api.buyproxies.org/?a=showProxies&pid=%{pid}&key=%{key}"
 
   def request
+    $proxy = nil
     uri = URL_WILD % { pid: @pid, key: @key }
     uri = URI(uri)
     uri.read
