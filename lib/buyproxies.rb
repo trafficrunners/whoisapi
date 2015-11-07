@@ -10,7 +10,7 @@ class Buyproxies
     @key = key
   end
 
-  def proxies(bypass_cache: false, expires_in: 12.hours)
+  def proxies(bypass_cache: false, expires_in: 30.minutes)
     response = Rails.cache.fetch(force: bypass_cache, expires_in: expires_in) { request }
     parse_response(response)
   end
