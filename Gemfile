@@ -32,6 +32,10 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
+gem 'luminati'
+gem 'redis'
+gem 'redis-namespace'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
@@ -43,6 +47,9 @@ group :development, :test do
   gem 'spring'
 end
 
+gem 'pry-rails'
+gem 'pry-byebug'
+gem 'awesome_print'
 
 gem 'whois', git: "https://github.com/trafficrunners/whois.git"
 gem 'public_suffix'

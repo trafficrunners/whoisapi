@@ -23,6 +23,8 @@ $proxy = nil
 
 class TCPSocket
   def self.environment_proxy
+    # Rails.logger.info '111--------------'
+    # Rails.logger.info $proxy
     $proxy
   end
 end
@@ -80,6 +82,9 @@ class Domain < ActiveRecord::Base
 
       $proxy = proxy.format
       w = Whois.lookup(url)
+      # Rails.logger.info '2222---------------'
+      # Rails.logger.info w.inspect
+
       $proxy = nil
 
       if url.end_with?(".nl") && w.content.include?("maximum number of requests per second")
@@ -94,7 +99,9 @@ class Domain < ActiveRecord::Base
 
     rescue => e
       puts "*" * 100
+      puts e.class
       puts e.message
+      puts e.backtrace
 
       if e.class == Timeout::Error || e.class == Whois::ConnectionError
         MyProxy.update_counters proxy.id, timeout_errors: 1

@@ -2,14 +2,13 @@
 #
 # Table name: my_proxies
 #
-#  id               :integer          not null, primary key
-#  ip               :string
-#  port             :string
-#  user             :string
-#  pass             :string
-#  timeout_errors   :integer          default(0)
-#  used             :integer          default(0)
-#  successful_whois :integer
+#  id             :integer          not null, primary key
+#  ip             :string
+#  port           :string
+#  user           :string
+#  pass           :string
+#  timeout_errors :integer          default(0)
+#  used           :integer          default(0)
 #
 
 require 'csv'
@@ -24,8 +23,24 @@ class MyProxy < ActiveRecord::Base
     end
   end
 
-  def self.rand
-    new(Buyproxies.from_config.proxies.sample)
+  def self.rand(provider: :luminati)
+  # def self.rand(provider: :buyproxies)
+    options =
+      case provider
+      when :buyproxies
+        Buyproxies.from_config.proxies.sample
+      when :luminati
+        luminati_hsh = LuminatiProxy.get_super_proxy
+        {
+          ip: luminati_hsh['ip_address'],
+          port: luminati_hsh['port'],
+          user: "lum-customer-domainreanimator-zone-gen-session-#{Random.rand(100000000)}",
+          pass: luminati_hsh['password']
+        }
+      else
+        fail 'Unknown proxies provider'
+      end
+    new options
   end
 
   def format
