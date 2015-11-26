@@ -23,8 +23,8 @@ $proxy = nil
 
 class TCPSocket
   def self.environment_proxy
-    # Rails.logger.info '111--------------'
-    # Rails.logger.info $proxy
+    Rails.logger.info '111--------------'
+    Rails.logger.info $proxy
     $proxy
   end
 end

@@ -1,6 +1,6 @@
 class LuminatiProxy
   def self.get_super_proxy
-    super_proxy = $redis.get("super_proxy")
+    super_proxy = nil; #$redis.get("super_proxy")
 
     if super_proxy
       return JSON.parse(super_proxy)

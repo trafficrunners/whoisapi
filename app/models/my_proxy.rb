@@ -30,11 +30,13 @@ class MyProxy < ActiveRecord::Base
       when :buyproxies
         Buyproxies.from_config.proxies.sample
       when :luminati
-        luminati_hsh = LuminatiProxy.get_super_proxy
+        luminati_hsh = JSON.parse(LuminatiProxy.get_super_proxy)
+        binding.pry
         {
           ip: luminati_hsh['ip_address'],
           port: luminati_hsh['port'],
           user: "lum-customer-domainreanimator-zone-gen-session-#{Random.rand(100000000)}",
+          # user: luminati_hsh['username'],
           pass: luminati_hsh['password']
         }
       else
