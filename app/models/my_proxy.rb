@@ -30,8 +30,13 @@ class MyProxy < ActiveRecord::Base
       when :buyproxies
         Buyproxies.from_config.proxies.sample
       when :luminati
-        luminati_hsh = JSON.parse(LuminatiProxy.get_super_proxy)
-        binding.pry
+        # luminati_hsh = JSON.parse(LuminatiProxy.get_super_proxy)
+        luminati_hsh = {
+          'ip_address' => '198.199.82.181',
+          'port' => '22225',
+          'password' => 'cbde2045a4f4'
+        }
+
         {
           ip: luminati_hsh['ip_address'],
           port: luminati_hsh['port'],
