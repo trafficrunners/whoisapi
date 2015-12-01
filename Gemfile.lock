@@ -7,10 +7,17 @@ GIT
       sshkit (~> 1.2)
 
 GIT
-  remote: https://github.com/trafficrunners/whois.git
-  revision: 6de77b1571a13b212d876600cab7926070bbb36a
+  remote: git@github.com:httplab/ruby-proxifier.git
+  revision: 68776649f2969a3762964253911e9a433b717cd2
   specs:
-    whois (3.5.9)
+    proxifier (1.0.3)
+
+GIT
+  remote: https://github.com/trafficrunners/whois.git
+  revision: 3253eb132a9d86b349476817159d9c105b0f9928
+  branch: weppos_update
+  specs:
+    whois (3.6.3)
       activesupport (>= 3)
 
 GEM
@@ -124,7 +131,6 @@ GEM
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     pg (0.18.1)
-    proxifier (1.0.3)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -228,7 +234,7 @@ DEPENDENCIES
   jquery-rails
   luminati
   pg
-  proxifier
+  proxifier!
   pry-byebug
   pry-rails
   public_suffix

@@ -51,10 +51,10 @@ gem 'pry-rails'
 gem 'pry-byebug'
 gem 'awesome_print'
 
-gem 'whois', git: "https://github.com/trafficrunners/whois.git"
+gem 'whois', git: "https://github.com/trafficrunners/whois.git", branch: 'weppos_update'
 gem 'public_suffix'
 gem 'annotate'
-gem 'proxifier'
+gem 'proxifier', git: 'git@github.com:httplab/ruby-proxifier.git'
 gem "airbrake"
 
 gem 'puma'

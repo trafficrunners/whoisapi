@@ -23,8 +23,6 @@ $proxy = nil
 
 class TCPSocket
   def self.environment_proxy
-    Rails.logger.info '111--------------'
-    Rails.logger.info $proxy
     $proxy
   end
 end
@@ -82,8 +80,6 @@ class Domain < ActiveRecord::Base
 
       $proxy = proxy.format
       w = Whois.lookup(url)
-      # Rails.logger.info '2222---------------'
-      # Rails.logger.info w.inspect
 
       $proxy = nil
 
@@ -117,6 +113,8 @@ class Domain < ActiveRecord::Base
         Airbrake.notify_or_ignore(error_class: "Whois Failed after max attempts", error_message: "#{url} - #{e.message}")
         return nil
       end
+    ensure
+      $proxy = nil
     end
 
     begin
@@ -175,5 +173,4 @@ class Domain < ActiveRecord::Base
     end
     return d.available?
   end
-
 end
